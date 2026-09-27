@@ -130,11 +130,35 @@ static const char successPage[] =
 "<h2>Upload another file</h2><form method=\"post\" action=\"/upload\" enctype=\"multipart/form-data\"><input type=\"file\" name=\"name\"><input class=\"button\" type=\"submit\" value=\"Upload\"></form>\n"
 "</body></html>";
 
-#define SCREEN_WIDTH 256 // OLED display width, in pixels
-#define SCREEN_HEIGHT 64 // OLED display height, in pixels
-#define DIMMED_BRIGHTNESS 1 // OLED display brightness level when in sleep/screensaver mode
+#ifndef SCREEN_WIDTH
+#define SCREEN_WIDTH 256 // OLED/TFT display width, in pixels
+#endif
+#ifndef SCREEN_HEIGHT
+#define SCREEN_HEIGHT 64 // OLED/TFT display height, in pixels
+#endif
+#define DIMMED_BRIGHTNESS 1 // Display brightness level when in sleep/screensaver mode
 
-U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ GPIO_NUM_26, /* dc=*/ GPIO_NUM_5, /* reset=*/ U8X8_PIN_NONE);
+#ifndef DISPLAY_CS_PIN
+#define DISPLAY_CS_PIN GPIO_NUM_26
+#endif
+#ifndef DISPLAY_DC_PIN
+#define DISPLAY_DC_PIN GPIO_NUM_5
+#endif
+#ifndef DISPLAY_RST_PIN
+#define DISPLAY_RST_PIN U8X8_PIN_NONE
+#endif
+#ifndef DISPLAY_SCK_PIN
+#define DISPLAY_SCK_PIN GPIO_NUM_18
+#endif
+#ifndef DISPLAY_MOSI_PIN
+#define DISPLAY_MOSI_PIN GPIO_NUM_23
+#endif
+
+#ifdef USE_ST7789P_DISPLAY
+U8G2_ST7789_240X320_F_4W_HW_SPI u8g2(U8G2_R1, /* cs=*/ DISPLAY_CS_PIN, /* dc=*/ DISPLAY_DC_PIN, /* reset=*/ DISPLAY_RST_PIN);
+#else
+U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ DISPLAY_CS_PIN, /* dc=*/ DISPLAY_DC_PIN, /* reset=*/ DISPLAY_RST_PIN);
+#endif
 
 // Vertical line positions on the OLED display (National Rail)
 #define LINE0 0
@@ -504,7 +528,10 @@ static char rssMessage[MAXMESSAGESIZE] = "";           // Holds the current, for
 
 
 // Optional TTP223 touch sensor / push button
-touchSensor button(GPIO_NUM_34);
+#ifndef TOUCH_SENSOR_PIN
+#define TOUCH_SENSOR_PIN GPIO_NUM_34
+#endif
+touchSensor button(TOUCH_SENSOR_PIN);
 
 // FreeRTOS Task Handle and Status Flags
 TaskHandle_t fetchTaskHandle = NULL;
@@ -3177,7 +3204,8 @@ void setup(void) {
   // These are the default wsdl XML SOAP entry points. They can be overridden in the config.json file if necessary
   strlcpy(wsdlHost,"lite.realtime.nationalrail.co.uk",sizeof(wsdlHost));
   strlcpy(wsdlAPI,"/OpenLDBWS/wsdl.aspx?ver=2021-11-01",sizeof(wsdlAPI));
-  u8g2.begin();                       // Start the OLED panel
+  SPI.begin(DISPLAY_SCK_PIN, -1, DISPLAY_MOSI_PIN, DISPLAY_CS_PIN);
+  u8g2.begin();                       // Start the display panel
   u8g2.setContrast(brightness);       // Initial brightness
   u8g2.setDrawColor(1);               // Only a monochrome display, so set the colour to "on"
   u8g2.setFontMode(1);                // Transparent fonts

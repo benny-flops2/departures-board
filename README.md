@@ -74,6 +74,26 @@ Solder the 4 SPI connections, plus power and ground. The wires **MUST** be solde
 
 <img src="https://github.com/user-attachments/assets/0ebc152c-36d9-4f73-8223-1f52e9198543" style="display:block; margin:0 auto;">
 
+### ESP32-S3 + ST7789P variant
+
+An additional PlatformIO target is included for ESP32-S3 boards with an SPI ST7789P display:
+
+```ini
+[env:esp32-s3-st7789p]
+```
+
+Default pin mapping in this target is:
+
+| ST7789P Pin | ESP32-S3 Pin |
+|:------------|:------------:|
+| SCL / SCK   | IO12 |
+| SDA / MOSI  | IO11 |
+| CS          | IO10 |
+| DC          | IO9  |
+| RST         | IO8  |
+
+If your board uses different pins, change the `DISPLAY_*` build flags in `platformio.ini` for this environment.
+
 ### Installing the firmware
 
 The project uses the Arduino framework and the ESP32 v3.3.9 core. If you want to build from source, you'll need [PlatformIO](https://platformio.org). The software is designed for, and makes use of, a dual-core ESP32 processor. If you attempt to target and compile for a single core ESP32 variant the experience will be suboptimal at best.
